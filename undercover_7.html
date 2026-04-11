@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Undercover">
+<title>Undercover</title>
+<style>
+:root{
+  --bg:#080810;
+  --bg2:#10101a;
+  --bg3:#16161f;
+  --border:#ffffff12;
+  --border2:#ffffff22;
+  --text:#f0f0ff;
+  --muted:#6666aa;
+  --faint:#333355;
+  --accent:#7c6af7;
+  --accent2:#a855f7;
+  --green:#22c55e;
+  --red:#ef4444;
+  --blue:#60a5fa;
+  --amber:#f59e0b;
+  --pink:#f472b6;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+@keyframes glow{0%,100%{box-shadow:0 0 20px #7c6af744}50%{box-shadow:0 0 40px #7c6af799}}
+@keyframes slideUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pop{0%{transform:scale(0.8);opacity:0}60%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+
+.anim-fadeup{animation:fadeUp .4s ease both}
+.anim-fadein{animation:fadeIn .3s ease both}
+.anim-slideup{animation:slideUp .45s cubic-bezier(.22,1,.36,1) both}
+.anim-pop{animation:pop .4s cubic-bezier(.22,1,.36,1) both}
+.anim-d1{animation-delay:.05s}
+.anim-d2{animation-delay:.12s}
+.anim-d3{animation-delay:.2s}
+.anim-d4{animation-delay:.28s}
+.anim-d5{animation-delay:.36s}
+
+/* SCREENS */
+.screen{display:none;padding:1.5rem 1.25rem 5rem;min-height:100vh}
+.screen.active{display:block}
+
+/* BUTTONS */
+.btn{width:100%;padding:15px;font-size:16px;font-weight:600;border-radius:16px;cursor:pointer;border:none;margin-top:0.75rem;display:block;text-align:center;font-family:inherit;transition:transform .15s,opacity .15s}
+.btn:active{transform:scale(0.96)}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 4px 24px #7c6af733}
+.btn-primary:hover{opacity:.9}
+.btn-outline{background:var(--bg3);color:var(--text);border:1px solid var(--border2)}
+.btn-red{background:#1f0a0a;color:var(--red);border:1px solid #3a1414}
+.btn-green{background:#0a1f0a;color:var(--green);border:1px solid #144a14}
+.btn-amber{background:#1f1200;color:var(--amber);border:1px solid #3a2400}
+
+/* CARDS */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:18px;padding:1.25rem;margin-bottom:1rem}
+
+/* INPUTS */
+.input-field{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:12px;padding:12px 14px;color:var(--text);font-size:15px;outline:none;font-family:inherit;margin-bottom:0.5rem;transition:border-color .2s}
+.input-field:focus{border-color:var(--accent)}
+.input-field::placeholder{color:var(--faint)}
+.player-row{display:flex;align-items:center;gap:8px;margin-bottom:0.6rem}
+.player-row .input-field{margin-bottom:0}
+.del{background:none;border:none;cursor:pointer;color:var(--faint);font-size:22px;padding:0 4px;line-height:1;flex-shrink:0;transition:color .15s}
+.del:hover{color:var(--red)}
+.add-btn{background:none;border:1px dashed var(--faint);border-radius:12px;width:100%;padding:11px;color:var(--muted);cursor:pointer;font-size:14px;margin:0.5rem 0;font-family:inherit;transition:border-color .2s,color .2s}
+.add-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* COUNTER */
+.counter-row{display:flex;align-items:center;gap:12px;margin-bottom:0.85rem}
+.counter-row label{flex:1;font-size:15px;color:#ccc}
+.cbtn{width:38px;height:38px;border-radius:12px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;transition:background .15s}
+.cbtn:active{background:var(--faint)}
+.cval{font-size:20px;font-weight:700;min-width:28px;text-align:center;color:var(--text)}
+
+/* ERR */
+.err{color:var(--red);font-size:13px;margin-top:6px;display:none}
+
+/* DIVIDER */
+.divider{height:1px;background:var(--border);margin:1rem 0}
+
+/* TOP BAR */
+.top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem}
+.back-btn{background:none;border:none;color:var(--muted);font-size:15px;cursor:pointer;font-family:inherit;padding:4px 0}
+
+/* CAT FILTER */
+.cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-bottom:1rem}
+.cat-btn{padding:10px 8px;font-size:13px;font-weight:500;border-radius:12px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);cursor:pointer;text-align:center;font-family:inherit;transition:all .15s}
+.cat-btn.on{background:var(--bg2);border-color:var(--accent);color:var(--text)}
+.cat-btn.on::before{content:'✓ ';color:var(--accent)}
+
+/* DISTRIB */
+.distrib-box{background:var(--bg2);border:1px solid var(--border2);border-radius:24px;padding:3rem 1.5rem;text-align:center;margin:1.5rem 0;animation:glow 3s ease-in-out infinite}
+.distrib-name{font-size:34px;font-weight:700;color:var(--text);margin-bottom:0.5rem;background:linear-gradient(135deg,#fff,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+
+/* WORD REVEAL */
+.word-tap-box{background:var(--bg2);border:2px dashed var(--faint);border-radius:20px;padding:3rem 1.5rem;text-align:center;margin:1rem 0;cursor:pointer;transition:border-color .2s,background .2s}
+.word-tap-box:active{background:var(--bg3);border-color:var(--accent)}
+.word-shown-box{background:var(--bg2);border:1px solid var(--border2);border-radius:20px;padding:2.5rem 1.5rem;text-align:center;margin:1rem 0;animation:pop .4s cubic-bezier(.22,1,.36,1)}
+.word-big{font-size:44px;font-weight:700;color:var(--text);line-height:1.15;margin-bottom:0.5rem}
+.word-img{width:180px;height:180px;object-fit:cover;border-radius:16px;margin:0.5rem auto;display:block}
+.word-cat-pill{display:inline-block;background:var(--bg);border:1px solid var(--border2);border-radius:20px;font-size:12px;color:var(--muted);padding:3px 12px;margin-top:0.5rem}
+
+/* GAME ORDER */
+.round-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem}
+.round-pill{background:var(--bg2);border:1px solid var(--border2);color:var(--muted);font-size:13px;padding:4px 14px;border-radius:20px}
+.player-item{display:flex;align-items:center;gap:12px;background:var(--bg2);border-radius:14px;padding:14px 16px;border:1px solid var(--border);margin-bottom:0.5rem}
+.pi-num{font-size:13px;color:var(--faint);min-width:22px}
+.pi-name{font-size:16px;font-weight:500;flex:1}
+.pi-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0}
+
+/* VOTE */
+.vote-btn{width:100%;padding:14px 16px;font-size:15px;font-weight:500;border-radius:14px;background:var(--bg2);border:1px solid var(--border);color:var(--text);margin-bottom:0.5rem;text-align:left;font-family:inherit;cursor:pointer;transition:border-color .15s,background .15s}
+.vote-btn:active{background:var(--bg3)}
+.vote-btn.selected{border-color:var(--red);color:var(--red);background:#1f0a0a}
+
+/* ELIM */
+.elim-box{border-radius:20px;padding:2rem 1.5rem;text-align:center;margin:1rem 0}
+.elim-civil{background:#061a06;border:1px solid #1a4a1a}
+.elim-under{background:#1a0606;border:1px solid #4a1a1a}
+.elim-white{background:#06061a;border:1px solid #1a1a4a}
+.role-pill{display:inline-block;font-size:13px;font-weight:600;padding:5px 16px;border-radius:20px;margin-bottom:0.75rem}
+.rp-civil{background:#0d2e1a;color:var(--green)}
+.rp-under{background:#2e0a1a;color:var(--pink)}
+.rp-white{background:#1a1a2e;color:var(--blue)}
+.elim-drink{font-size:16px;font-weight:600;color:var(--amber);margin-top:0.75rem}
+
+/* END */
+.end-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px}
+.end-row:last-child{border-bottom:none}
+
+/* HERO */
+.hero-icon{font-size:64px;margin-bottom:1rem;display:block;text-align:center}
+.hero-title{font-size:30px;font-weight:700;text-align:center;background:linear-gradient(135deg,#fff 30%,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:0.5rem}
+.hero-sub{font-size:14px;color:var(--muted);text-align:center;margin-bottom:2rem}
+
+/* PROGRESS */
+.prog-bar{height:3px;background:var(--border);border-radius:2px;margin-bottom:2rem;overflow:hidden}
+.prog-fill{height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:2px;transition:width .4s ease}
+
+/* SECTION LABEL */
+.section-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:0.6rem;margin-top:1.25rem}
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div id="s-home" class="screen active">
+  <div style="padding-top:4rem">
+    <span class="hero-icon anim-pop">🕵️</span>
+    <p class="hero-title anim-fadeup">Undercover</p>
+    <p class="hero-sub anim-fadeup anim-d1">Trouve l'intrus avant qu'il te noie</p>
+    <button class="btn btn-primary anim-slideup anim-d2" onclick="go('s-setup')">Nouvelle partie</button>
+    <button class="btn btn-outline anim-slideup anim-d3" onclick="go('s-rules')">Règles du jeu</button>
+    <button class="btn btn-outline anim-slideup anim-d4" onclick="buildAdmin();go('s-admin')" style="color:var(--muted)">Voir les paires 🗂️</button>
+  </div>
+</div>
+
+<!-- RULES -->
+<div id="s-rules" class="screen">
+  <div class="top-bar"><span style="font-size:18px;font-weight:600">Règles</span><button class="back-btn" onclick="go('s-home')">← Retour</button></div>
+  <div class="card anim-fadeup">
+    <p style="font-size:14px;font-weight:600;color:#ccc;margin-bottom:6px">Rôles</p>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:12px">
+      <span style="color:var(--green)">Civils</span> : même mot secret.<br>
+      <span style="color:var(--pink)">Undercover</span> : mot similaire mais différent.<br>
+      <span style="color:var(--blue)">Mr. White</span> : aucun mot, doit bluffer.
+    </p>
+    <p style="font-size:14px;font-weight:600;color:#ccc;margin-bottom:6px">Personne ne connaît son rôle</p>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Tu vois seulement ton mot. Donne des indices sans le trahir.</p>
+    <p style="font-size:14px;font-weight:600;color:#ccc;margin-bottom:6px">Votes & gorgées</p>
+    <p style="font-size:13px;color:var(--muted);line-height:1.8">
+      🟢 Civil éliminé → votants boivent 2<br>
+      🔴 Undercover éliminé → boit 3 (tour 1), +1/tour<br>
+      ⚪ Mr. White éliminé → tente de deviner le mot civil<br>
+      &nbsp;&nbsp;&nbsp;→ Trouvé = distribue 8 à tous<br>
+      &nbsp;&nbsp;&nbsp;→ Raté = boit 0 (tour 1), +1/tour
+    </p>
+  </div>
+  <button class="btn btn-outline" onclick="go('s-home')">Retour</button>
+</div>
+
+<!-- SETUP -->
+<div id="s-setup" class="screen">
+  <div class="top-bar anim-fadeup"><span style="font-size:18px;font-weight:600">Configuration</span><button class="back-btn" onclick="go('s-home')">← Retour</button></div>
+
+  <p class="section-label anim-fadeup">Joueurs</p>
+  <div id="players-list" class="anim-fadeup anim-d1"></div>
+  <button class="add-btn anim-fadeup anim-d2" onclick="addPlayer()">+ Ajouter un joueur</button>
+
+  <div class="divider"></div>
+
+  <p class="section-label">Rôles spéciaux</p>
+  <div class="card">
+    <div class="counter-row">
+      <label>Undercovres</label>
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="cbtn" onclick="chg('uc',-1)">−</button>
+        <span class="cval" id="uc-val">1</span>
+        <button class="cbtn" onclick="chg('uc',1)">+</button>
+      </div>
+    </div>
+    <div class="counter-row" style="margin-bottom:0">
+      <label>Mr. White</label>
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="cbtn" onclick="chg('mw',-1)">−</button>
+        <span class="cval" id="mw-val">0</span>
+        <button class="cbtn" onclick="chg('mw',1)">+</button>
+      </div>
+    </div>
+  </div>
+
+  <p class="section-label">Catégories de mots</p>
+  <div class="card">
+    <p style="font-size:13px;color:var(--muted);margin-bottom:0.75rem">Sélectionne les catégories à inclure</p>
+    <div class="cat-grid" id="cat-grid"></div>
+    <button style="background:none;border:none;color:var(--accent);font-size:13px;cursor:pointer;font-family:inherit;padding:4px 0" onclick="toggleAllCats()">Tout cocher / décocher</button>
+  </div>
+
+  <p id="setup-err" class="err"></p>
+  <button class="btn btn-primary" onclick="startGame()">Lancer la partie 🕵️</button>
+</div>
+
+<!-- DISTRIB : passe le tel -->
+<div id="s-distrib" class="screen">
+  <div id="distrib-prog" class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+  <div class="distrib-box anim-pop">
+    <p style="font-size:13px;color:var(--muted);margin-bottom:0.5rem">Passe le téléphone à</p>
+    <p id="d-name" class="distrib-name"></p>
+    <p style="font-size:13px;color:var(--faint);margin-top:0.75rem">Cette personne appuie seule</p>
+  </div>
+  <button class="btn btn-primary" id="distrib-ready-btn">C'est moi, je suis prêt(e)</button>
+</div>
+
+<!-- MOT SECRET -->
+<div id="s-word" class="screen">
+  <p style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:0.25rem">Ton mot secret,</p>
+  <p id="w-name" style="font-size:26px;font-weight:700;color:var(--text);text-align:center;margin-bottom:1.5rem"></p>
+
+  <div id="word-tap-box" class="word-tap-box" onclick="revealWord()">
+    <p style="font-size:28px;margin-bottom:0.5rem">👁️</p>
+    <p style="font-size:15px;color:var(--muted)">Appuie pour voir ton mot</p>
+    <p style="font-size:12px;color:var(--faint);margin-top:0.5rem">Assure-toi que personne ne regarde</p>
+  </div>
+
+  <div id="word-shown-box" class="word-shown-box" style="display:none">
+    <div id="w-content"></div>
+    <div id="w-cat" class="word-cat-pill"></div>
+  </div>
+
+  <button id="w-next-btn" class="btn btn-outline" style="display:none" onclick="nextDistrib()">J'ai mémorisé → Joueur suivant</button>
+</div>
+
+<!-- JEU : ordre -->
+<div id="s-game" class="screen">
+  <div class="round-row anim-fadeup">
+    <span class="round-pill" id="g-round">Round 1</span>
+    <span style="font-size:13px;color:var(--muted)" id="g-alive"></span>
+  </div>
+  <p style="font-size:16px;font-weight:600;color:#ccc;margin-bottom:0.4rem" class="anim-fadeup anim-d1">Ordre de passage</p>
+  <p style="font-size:13px;color:var(--muted);margin-bottom:1rem" class="anim-fadeup anim-d2">Donnez chacun un indice sur votre mot</p>
+  <div id="order-list"></div>
+  <button class="btn btn-primary" onclick="startVote()">Voter 🗳️</button>
+</div>
+
+<!-- VOTE -->
+<div id="s-vote" class="screen">
+  <p style="font-size:20px;font-weight:700;color:var(--text);margin-bottom:0.4rem" class="anim-fadeup">Vote</p>
+  <p style="font-size:13px;color:var(--muted);margin-bottom:1.25rem" class="anim-fadeup anim-d1">Qui est l'intrus selon vous ?</p>
+  <div id="vote-list"></div>
+  <p id="vote-err" class="err">Sélectionne un joueur d'abord</p>
+  <button class="btn btn-red" onclick="eliminer()">Éliminer</button>
+</div>
+
+<!-- RÉSULTAT ÉLIM -->
+<div id="s-elim" class="screen">
+  <p style="font-size:18px;font-weight:600;text-align:center;margin-bottom:1rem" class="anim-fadeup">Résultat</p>
+  <div id="elim-box-div" class="anim-pop"></div>
+  <div id="elim-actions"></div>
+</div>
+
+<!-- MR WHITE DEVINE -->
+<div id="s-guess" class="screen">
+  <div style="text-align:center;padding-top:1.5rem;margin-bottom:1.5rem" class="anim-pop">
+    <span style="font-size:52px;display:block;margin-bottom:0.75rem">🤍</span>
+    <p style="font-size:20px;font-weight:600;color:var(--blue);margin-bottom:0.5rem" id="guess-name"></p>
+    <p style="font-size:14px;color:#aaa;margin-bottom:0.25rem">Tu es Mr. White. Devine le mot des civils.</p>
+    <p style="font-size:13px;color:var(--muted)">Si tu trouves → tu distribues 8 gorgées à tous !</p>
+  </div>
+  <input class="input-field" id="guess-input" type="text" placeholder="Tape le mot..." autocomplete="off" autocorrect="off" autocapitalize="off">
+  <button class="btn btn-amber" onclick="checkGuess()">Valider ma réponse</button>
+</div>
+
+<!-- RÉSULTAT GUESS -->
+<div id="s-guess-result" class="screen">
+  <div style="text-align:center;padding-top:3rem;margin-bottom:1.5rem" class="anim-pop">
+    <span id="gr-icon" style="font-size:56px;display:block;margin-bottom:0.75rem"></span>
+    <p id="gr-title" style="font-size:24px;font-weight:700;color:var(--text);margin-bottom:0.5rem"></p>
+    <p id="gr-sub" style="font-size:14px;color:var(--muted);margin-bottom:0.5rem"></p>
+    <p id="gr-drink" style="font-size:17px;font-weight:600;color:var(--amber);margin-top:0.75rem"></p>
+  </div>
+  <button class="btn btn-primary" id="gr-next"></button>
+</div>
+
+<!-- FIN DE PARTIE -->
+<div id="s-end" class="screen">
+  <div style="text-align:center;padding-top:2rem;margin-bottom:1.5rem" class="anim-pop">
+    <span id="end-icon" style="font-size:56px;display:block;margin-bottom:0.75rem"></span>
+    <p id="end-title" style="font-size:26px;font-weight:700;color:var(--text);margin-bottom:0.5rem"></p>
+    <p id="end-sub" style="font-size:14px;color:var(--muted)"></p>
+  </div>
+  <div class="card anim-fadeup">
+    <p class="section-label" style="margin-top:0">Révélation des mots</p>
+    <div class="end-row"><span style="color:var(--green)">Mot civil</span><span id="end-cw" style="font-weight:600"></span></div>
+    <div class="end-row"><span style="color:var(--pink)">Mot undercover</span><span id="end-uw" style="font-weight:600"></span></div>
+    <div class="end-row" style="border:none"><span style="color:var(--muted)">Catégorie</span><span id="end-cat" style="color:var(--faint)"></span></div>
+  </div>
+  <div class="card anim-fadeup anim-d1" id="end-roles"></div>
+  <button class="btn btn-primary anim-slideup anim-d2" onclick="newGame()">Nouvelle partie</button>
+  <button class="btn btn-outline anim-slideup anim-d3" onclick="go('s-home')">Accueil</button>
+</div>
+
+<!-- ADMIN -->
+<div id="s-admin" class="screen">
+  <div class="top-bar anim-fadeup">
+    <span style="font-size:18px;font-weight:600">Paires de mots</span>
+    <button class="back-btn" onclick="go('s-home')">← Retour</button>
+  </div>
+  <button class="btn btn-outline anim-fadeup" onclick="buildCatPick();go('s-addpair')" style="margin-bottom:1rem;color:var(--accent);border-color:var(--accent)">+ Ajouter une paire</button>
+  <div id="admin-filter" class="anim-fadeup anim-d1" style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:1rem"></div>
+  <div id="admin-list" class="anim-fadeup anim-d2"></div>
+</div>
+
+<!-- AJOUTER PAIRE -->
+<div id="s-addpair" class="screen">
+  <div class="top-bar anim-fadeup">
+    <span style="font-size:18px;font-weight:600">Nouvelle paire</span>
+    <button class="back-btn" onclick="buildAdmin();go('s-admin')">← Retour</button>
+  </div>
+  <div class="card anim-fadeup anim-d1">
+    <p style="font-size:13px;color:var(--muted);margin-bottom:1rem">Les civils auront le mot 1, l'undercover le mot 2. Tu peux mettre texte ou image.</p>
+
+    <p class="section-label" style="margin-top:0">Mot civil</p>
+    <input class="input-field" id="add-civil" type="text" placeholder="Texte (ex: Levrette)" autocomplete="off" autocorrect="off">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:0.75rem">
+      <label style="font-size:13px;color:var(--muted);flex:1">Image civils (optionnel)</label>
+      <label style="padding:7px 14px;font-size:13px;border-radius:10px;border:1px solid var(--border2);background:var(--bg3);color:var(--muted);cursor:pointer">
+        Choisir
+        <input type="file" accept="image/*" id="img-civil-input" style="display:none" onchange="previewImg(this,'img-civil-preview','img-civil-data')">
+      </label>
+    </div>
+    <div id="img-civil-preview" style="display:none;margin-bottom:0.75rem">
+      <img id="img-civil-img" style="width:80px;height:80px;object-fit:cover;border-radius:10px;border:1px solid var(--border2)">
+      <button onclick="clearImg('img-civil-preview','img-civil-data','img-civil-input')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:13px;margin-left:8px">✕ Retirer</button>
+    </div>
+    <input type="hidden" id="img-civil-data">
+
+    <p class="section-label">Mot undercover</p>
+    <input class="input-field" id="add-under" type="text" placeholder="Texte (ex: Missio)" autocomplete="off" autocorrect="off">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:0.75rem">
+      <label style="font-size:13px;color:var(--muted);flex:1">Image undercover (optionnel)</label>
+      <label style="padding:7px 14px;font-size:13px;border-radius:10px;border:1px solid var(--border2);background:var(--bg3);color:var(--muted);cursor:pointer">
+        Choisir
+        <input type="file" accept="image/*" id="img-under-input" style="display:none" onchange="previewImg(this,'img-under-preview','img-under-data')">
+      </label>
+    </div>
+    <div id="img-under-preview" style="display:none;margin-bottom:0.75rem">
+      <img id="img-under-img" style="width:80px;height:80px;object-fit:cover;border-radius:10px;border:1px solid var(--border2)">
+      <button onclick="clearImg('img-under-preview','img-under-data','img-under-input')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:13px;margin-left:8px">✕ Retirer</button>
+    </div>
+    <input type="hidden" id="img-under-data">
+
+    <p class="section-label">Catégorie</p>
+    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.75rem" id="cat-pick"></div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:0.5rem">Ou crée une nouvelle catégorie :</p>
+    <input class="input-field" id="add-cat-new" type="text" placeholder="Ex: Mes paires custom" autocomplete="off">
+  </div>
+  <p id="addpair-err" style="color:var(--red);font-size:13px;display:none;margin-top:4px"></p>
+  <button class="btn btn-primary" onclick="savePair()">Ajouter cette paire ✓</button>
+  <button class="btn btn-outline" onclick="buildAdmin();go('s-admin')">Annuler</button>
+</div>
+
+<script>
+// ============================================================
+// PAIRES DE MOTS
+// Pour ajouter des images : remplace le champ "c" ou "u" par
+// {txt:"Nom", img:"data:image/jpeg;base64,..."} 
+// Exemple: {c:{txt:"Goku",img:"data:image/jpeg;base64,/9j/..."}, u:"Vegeta", cat:"Dragon Ball"}
+// ============================================================
+var PAIRS=[
+  // ANIMES — persos iconiques + noms d'animes
+  {c:"Naruto",u:"Sasuke",cat:"Animes"},
+  {c:"Goku",u:"Vegeta",cat:"Animes"},
+  {c:"Luffy",u:"Zoro",cat:"Animes"},
+  {c:"Luffy",u:"Naruto",cat:"Animes"},
+  {c:"Goku",u:"Naruto",cat:"Animes"},
+  {c:"Dragon Ball",u:"Naruto",cat:"Animes"},
+  {c:"One Piece",u:"Naruto",cat:"Animes"},
+  {c:"Dragon Ball",u:"One Piece",cat:"Animes"},
+  {c:"Demon Slayer",u:"Jujutsu Kaisen",cat:"Animes"},
+  {c:"Naruto",u:"One Piece",cat:"Animes"},
+  {c:"Pikachu",u:"Bulbizarre",cat:"Animes"},
+  {c:"Son Goku",u:"Vegeta",cat:"Animes"},
+  {c:"Tanjiro",u:"Naruto",cat:"Animes"},
+  {c:"Gojo",u:"Naruto",cat:"Animes"},
+  // HISTOIRE & POLITIQUE (FR, monde, actu)
+  {c:"Macron",u:"Le Pen",cat:"Histoire & Politique"},
+  {c:"Sarkozy",u:"Hollande",cat:"Histoire & Politique"},
+  {c:"Chirac",u:"Mitterrand",cat:"Histoire & Politique"},
+  {c:"Melenchon",u:"Zemmour",cat:"Histoire & Politique"},
+  {c:"De Gaulle",u:"Petain",cat:"Histoire & Politique"},
+  {c:"Napoleon",u:"Cesar",cat:"Histoire & Politique"},
+  {c:"Cesar",u:"Cleopatre",cat:"Histoire & Politique"},
+  {c:"Poutine",u:"Staline",cat:"Histoire & Politique"},
+  {c:"Hitler",u:"Mussolini",cat:"Histoire & Politique"},
+  {c:"Churchill",u:"Roosevelt",cat:"Histoire & Politique"},
+  {c:"Lenin",u:"Trotski",cat:"Histoire & Politique"},
+  {c:"Napoleon",u:"Alexandre le Grand",cat:"Histoire & Politique"},
+  {c:"Poutine",u:"Zelensky",cat:"Histoire & Politique"},
+  {c:"Trump",u:"Biden",cat:"Histoire & Politique"},
+  {c:"Macron",u:"Biden",cat:"Histoire & Politique"},
+  // JEUX VIDEO
+  {c:"Minecraft",u:"Roblox",cat:"Jeux Vidéo"},
+  {c:"Fortnite",u:"Warzone",cat:"Jeux Vidéo"},
+  {c:"GTA",u:"Red Dead Redemption",cat:"Jeux Vidéo"},
+  {c:"FIFA",u:"eFootball",cat:"Jeux Vidéo"},
+  {c:"League of Legends",u:"Dota 2",cat:"Jeux Vidéo"},
+  {c:"Valorant",u:"CS:GO",cat:"Jeux Vidéo"},
+  {c:"Zelda",u:"Elden Ring",cat:"Jeux Vidéo"},
+  {c:"Mario Kart",u:"Crash Team Racing",cat:"Jeux Vidéo"},
+  {c:"Pokemon",u:"Digimon",cat:"Jeux Vidéo"},
+  {c:"Among Us",u:"Town of Salem",cat:"Jeux Vidéo"},
+  {c:"Call of Duty",u:"Battlefield",cat:"Jeux Vidéo"},
+  {c:"Cyberpunk 2077",u:"Watch Dogs",cat:"Jeux Vidéo"},
+  {c:"The Witcher",u:"Dragon Age",cat:"Jeux Vidéo"},
+  {c:"Apex Legends",u:"Fortnite",cat:"Jeux Vidéo"},
+  {c:"FIFA",u:"NBA 2K",cat:"Jeux Vidéo"},
+  // POSITIONS
+  {c:"Missio",u:"Levrette",cat:"Positions 😏"},
+  {c:"Cowgirl",u:"Cowboy",cat:"Positions 😏"},
+  {c:"Cuillere",u:"Fourchette",cat:"Positions 😏"},
+  {c:"Anal",u:"Vaginal",cat:"Positions 😏"},
+  {c:"Amazone",u:"Chevauchee",cat:"Positions 😏"},
+  {c:"Lotus",u:"Papillon",cat:"Positions 😏"},
+  {c:"69",u:"68",cat:"Positions 😏"},
+  {c:"Andromaque",u:"Missio",cat:"Positions 😏"},
+  {c:"Levrette",u:"Cuillere",cat:"Positions 😏"},
+  {c:"Debout",u:"Contre le mur",cat:"Positions 😏"},
+  // ALCOOLS
+  {c:"Ricard",u:"Pastis",cat:"Alcools"},
+  {c:"Whisky",u:"Rhum",cat:"Alcools"},
+  {c:"Biere",u:"Cidre",cat:"Alcools"},
+  {c:"Vodka",u:"Gin",cat:"Alcools"},
+  {c:"Champagne",u:"Prosecco",cat:"Alcools"},
+  {c:"Tequila",u:"Mezcal",cat:"Alcools"},
+  {c:"Rose",u:"Blanc",cat:"Alcools"},
+  {c:"Sangria",u:"Punch",cat:"Alcools"},
+  {c:"Mojito",u:"Caipirinha",cat:"Alcools"},
+  {c:"Bordeaux",u:"Bourgogne",cat:"Alcools"},
+  // PRENOMS — H/H et F/F uniquement, pas de mix
+  {c:"Evan",u:"Adel",cat:"Prénoms"},
+  {c:"Evan",u:"Ethan",cat:"Prénoms"},
+  {c:"Evan",u:"Anthony",cat:"Prénoms"},
+  {c:"Evan",u:"Teo",cat:"Prénoms"},
+  {c:"Evan",u:"Sandro",cat:"Prénoms"},
+  {c:"Evan",u:"Raph",cat:"Prénoms"},
+  {c:"Evan",u:"Samy",cat:"Prénoms"},
+  {c:"Evan",u:"SimonChinois",cat:"Prénoms"},
+  {c:"Adel",u:"Ethan",cat:"Prénoms"},
+  {c:"Adel",u:"Anthony",cat:"Prénoms"},
+  {c:"Adel",u:"Teo",cat:"Prénoms"},
+  {c:"Adel",u:"Sandro",cat:"Prénoms"},
+  {c:"Adel",u:"Raph",cat:"Prénoms"},
+  {c:"Adel",u:"Samy",cat:"Prénoms"},
+  {c:"Adel",u:"SimonChinois",cat:"Prénoms"},
+  {c:"Abdoul",u:"Ethan",cat:"Prénoms"},
+  {c:"Abdoul",u:"Anthony",cat:"Prénoms"},
+  {c:"Abdoul",u:"Teo",cat:"Prénoms"},
+  {c:"Abdoul",u:"Sandro",cat:"Prénoms"},
+  {c:"Abdoul",u:"Raph",cat:"Prénoms"},
+  {c:"Abdoul",u:"Samy",cat:"Prénoms"},
+  {c:"Abdoul",u:"SimonChinois",cat:"Prénoms"},
+  {c:"Ethan",u:"Anthony",cat:"Prénoms"},
+  {c:"Ethan",u:"Teo",cat:"Prénoms"},
+  {c:"Ethan",u:"Sandro",cat:"Prénoms"},
+  {c:"Ethan",u:"Raph",cat:"Prénoms"},
+  {c:"Ethan",u:"Samy",cat:"Prénoms"},
+  {c:"Ethan",u:"SimonChinois",cat:"Prénoms"},
+  {c:"Anthony",u:"Teo",cat:"Prénoms"},
+  {c:"Anthony",u:"Sandro",cat:"Prénoms"},
+  {c:"Anthony",u:"Raph",cat:"Prénoms"},
+  {c:"Anthony",u:"Samy",cat:"Prénoms"},
+  {c:"Anthony",u:"SimonChinois",cat:"Prénoms"},
+  {c:"Teo",u:"Sandro",cat:"Prénoms"},
+  {c:"Teo",u:"Raph",cat:"Prénoms"},
+  {c:"Teo",u:"Samy",cat:"Prénoms"},
+  {c:"Teo",u:"SimonChinois",cat:"Prénoms"},
+  {c:"Sandro",u:"Raph",cat:"Prénoms"},
+  {c:"Sandro",u:"Samy",cat:"Prénoms"},
+  {c:"Sandro",u:"SimonChinois",cat:"Prénoms"},
+  {c:"Raph",u:"Samy",cat:"Prénoms"},
+  {c:"Raph",u:"SimonChinois",cat:"Prénoms"},
+  {c:"Samy",u:"SimonChinois",cat:"Prénoms"},
+  {c:"Vincent",u:"Maxence",cat:"Prénoms"},
+  {c:"Mathieu Michalet",u:"Sebastien Guilbaud",cat:"Prénoms"},
+  {c:"Theomachoire",u:"Samy",cat:"Prénoms"},
+  {c:"Theomachoire",u:"SimonChinois",cat:"Prénoms"},
+  // Filles entre elles
+  {c:"Elena",u:"Anne",cat:"Prénoms"},
+  {c:"Elena",u:"Johanna",cat:"Prénoms"},
+  {c:"Elena",u:"Marie",cat:"Prénoms"},
+  {c:"Anne",u:"Johanna",cat:"Prénoms"},
+  {c:"Anne",u:"Marie",cat:"Prénoms"},
+  {c:"Johanna",u:"Marie",cat:"Prénoms"},
+];
+
+// ============================================================
+// ÉTAT
+// ============================================================
+var players=[],roles=[],words=[];
+var distribIdx=0,round=1,order=[],eliminated=[];
+var selectedVote=-1,nbUC=1,nbMW=0;
+var civilWord='',underWord='',pairCat='';
+var wordVisible=false;
+var activeCats=[];
+
+// ============================================================
+// CATEGORIES
+// ============================================================
+function getAllCats(){
+  var cats={};
+  PAIRS.forEach(function(p){cats[p.cat]=true;});
+  return Object.keys(cats).sort();
+}
+
+function buildCatGrid(){
+  var cats=getAllCats();
+  activeCats=cats.slice();
+  var html='';
+  cats.forEach(function(cat){
+    html+='<button class="cat-btn on" id="cat-'+escId(cat)+'" onclick="toggleCat(\''+escId(cat)+'\',\''+cat.replace(/'/g,"\\'")+'\')">'+(cat)+'</button>';
+  });
+  document.getElementById('cat-grid').innerHTML=html;
+}
+
+function escId(s){return s.replace(/[^a-zA-Z0-9]/g,'_');}
+
+function toggleCat(id,cat){
+  var btn=document.getElementById('cat-'+id);
+  var idx=activeCats.indexOf(cat);
+  if(idx>=0){activeCats.splice(idx,1);btn.classList.remove('on');}
+  else{activeCats.push(cat);btn.classList.add('on');}
+}
+
+function toggleAllCats(){
+  var cats=getAllCats();
+  if(activeCats.length===cats.length){
+    activeCats=[];
+    cats.forEach(function(cat){var btn=document.getElementById('cat-'+escId(cat));if(btn)btn.classList.remove('on');});
+  } else {
+    activeCats=cats.slice();
+    cats.forEach(function(cat){var btn=document.getElementById('cat-'+escId(cat));if(btn)btn.classList.add('on');});
+  }
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function go(id){
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+  var el=document.getElementById(id);
+  el.classList.add('active');
+  // Relance les animations
+  el.querySelectorAll('[class*="anim-"]').forEach(function(el){
+    el.style.animation='none';
+    el.offsetHeight;
+    el.style.animation='';
+  });
+  window.scrollTo(0,0);
+}
+
+function shuffle(arr){
+  var a=arr.slice();
+  for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}
+  return a;
+}
+
+function getWord(w){
+  if(typeof w==='object'&&w!==null)return w;
+  return {txt:w,img:null};
+}
+
+function renderWordContent(w,containerId){
+  var obj=getWord(w);
+  var el=document.getElementById(containerId);
+  if(obj.img){
+    el.innerHTML='<img src="'+obj.img+'" class="word-img" alt="'+obj.txt+'">'
+      +(obj.txt?'<p style="font-size:18px;font-weight:600;color:var(--muted);margin-top:0.5rem">'+obj.txt+'</p>':'');
+  } else {
+    el.innerHTML='<p class="word-big">'+obj.txt+'</p>';
+  }
+}
+
+// ============================================================
+// SETUP
+// ============================================================
+function addPlayer(){
+  var div=document.getElementById('players-list');
+  var idx=div.children.length;
+  var row=document.createElement('div');
+  row.className='player-row anim-fadeup';
+  row.innerHTML='<input class="input-field" type="text" placeholder="Joueur '+(idx+1)+'" maxlength="18"><button class="del" onclick="this.closest(\'.player-row\').remove()">×</button>';
+  div.appendChild(row);
+}
+
+function chg(type,delta){
+  var id=type==='uc'?'uc-val':'mw-val';
+  var el=document.getElementById(id);
+  var v=parseInt(el.textContent)+delta;
+  if(v<0)v=0;
+  if(type==='uc'&&v>5)v=5;
+  if(type==='mw'&&v>2)v=2;
+  el.textContent=v;
+  if(type==='uc')nbUC=v; else nbMW=v;
+}
+
+function startGame(){
+  var inputs=[].slice.call(document.querySelectorAll('#players-list input'));
+  var names=inputs.map(function(i){return i.value.trim();}).filter(Boolean);
+  var err=document.getElementById('setup-err');
+  nbUC=parseInt(document.getElementById('uc-val').textContent);
+  nbMW=parseInt(document.getElementById('mw-val').textContent);
+  if(names.length<3){err.textContent='Il faut au moins 3 joueurs.';err.style.display='block';return;}
+  if(nbUC+nbMW>=names.length){err.textContent='Trop de rôles pour ce nombre de joueurs.';err.style.display='block';return;}
+  if(nbUC===0&&nbMW===0){err.textContent='Il faut au moins 1 undercover ou 1 Mr. White.';err.style.display='block';return;}
+  if(activeCats.length===0){err.textContent='Sélectionne au moins une catégorie.';err.style.display='block';return;}
+  err.style.display='none';
+  players=names;
+
+  // Filtrer les paires selon catégories actives
+  var pool=PAIRS.filter(function(p){return activeCats.indexOf(p.cat)>=0;});
+  if(!pool.length){err.textContent='Aucune paire dans les catégories choisies.';err.style.display='block';return;}
+  var pair=pool[Math.floor(Math.random()*pool.length)];
+  civilWord=pair.c; underWord=pair.u; pairCat=pair.cat;
+
+  // Rôles
+  var rpool=[];
+  for(var i=0;i<nbUC;i++)rpool.push('under');
+  for(var i=0;i<nbMW;i++)rpool.push('white');
+  while(rpool.length<names.length)rpool.push('civil');
+  roles=shuffle(rpool);
+  words=roles.map(function(r){return r==='civil'?civilWord:r==='under'?underWord:null;});
+  eliminated=new Array(names.length).fill(false);
+  round=1; distribIdx=0;
+  showDistrib();
+}
+
+// ============================================================
+// DISTRIBUTION
+// ============================================================
+function showDistrib(){
+  if(distribIdx>=players.length){
+    buildOrder();
+    go('s-game');
+    return;
+  }
+  document.getElementById('d-name').textContent=players[distribIdx];
+  var pct=Math.round((distribIdx/players.length)*100);
+  document.getElementById('prog-fill').style.width=pct+'%';
+  go('s-distrib');
+}
+
+function goToWord(){
+  wordVisible=false;
+  document.getElementById('w-name').textContent=players[distribIdx];
+  document.getElementById('word-tap-box').style.display='block';
+  document.getElementById('word-shown-box').style.display='none';
+  document.getElementById('w-next-btn').style.display='none';
+  go('s-word');
+}
+
+function revealWord(){
+  if(wordVisible)return;
+  wordVisible=true;
+  var role=roles[distribIdx];
+  var w=words[distribIdx];
+  document.getElementById('word-tap-box').style.display='none';
+  document.getElementById('word-shown-box').style.display='block';
+  if(role==='white'){
+    document.getElementById('w-content').innerHTML='<p class="word-big">🤍</p><p style="font-size:16px;color:var(--blue);margin-top:0.25rem">Pas de mot — bluff !</p>';
+  } else {
+    renderWordContent(w,'w-content');
+  }
+  var catObj=getWord(w);
+  document.getElementById('w-cat').textContent='Catégorie : '+pairCat;
+  document.getElementById('w-next-btn').style.display='block';
+}
+
+function nextDistrib(){
+  distribIdx++;
+  showDistrib();
+}
+
+// ============================================================
+// JEU
+// ============================================================
+function buildOrder(){
+  var alive=[];
+  for(var i=0;i<players.length;i++){if(!eliminated[i])alive.push(i);}
+  order=shuffle(alive);
+  document.getElementById('g-round').textContent='Round '+round;
+  document.getElementById('g-alive').textContent=alive.length+' joueurs';
+  var html='';
+  order.forEach(function(i,pos){
+    html+='<div class="player-item anim-fadeup" style="animation-delay:'+(pos*0.07)+'s">'
+      +'<span class="pi-num">'+(pos+1)+'.</span>'
+      +'<span class="pi-name">'+players[i]+'</span>'
+      +'<span class="pi-dot"></span>'
+      +'</div>';
+  });
+  document.getElementById('order-list').innerHTML=html;
+}
+
+function startVote(){
+  selectedVote=-1;
+  var alive=[];
+  for(var i=0;i<players.length;i++){if(!eliminated[i])alive.push(i);}
+  var html='';
+  alive.forEach(function(i,k){
+    html+='<button class="vote-btn anim-fadeup" style="animation-delay:'+(k*0.06)+'s" id="vbtn-'+i+'" onclick="selectVote('+i+')">'+players[i]+'</button>';
+  });
+  document.getElementById('vote-list').innerHTML=html;
+  document.getElementById('vote-err').style.display='none';
+  go('s-vote');
+}
+
+function selectVote(idx){
+  selectedVote=idx;
+  [].slice.call(document.querySelectorAll('.vote-btn')).forEach(function(b){b.classList.remove('selected');});
+  var btn=document.getElementById('vbtn-'+idx);
+  if(btn)btn.classList.add('selected');
+}
+
+function eliminer(){
+  if(selectedVote===-1){document.getElementById('vote-err').style.display='block';return;}
+  var idx=selectedVote;
+  eliminated[idx]=true;
+  var role=roles[idx];
+  var name=players[idx];
+  var boxHtml='', actHtml='';
+
+  if(role==='civil'){
+    boxHtml='<div class="elim-box elim-civil">'
+      +'<span class="role-pill rp-civil">🟢 Civil</span>'
+      +'<p style="font-size:26px;font-weight:700;color:var(--text);margin:0.5rem 0">'+name+'</p>'
+      +'<p style="font-size:13px;color:var(--muted)">Son mot était : "'+getWord(civilWord).txt+'"</p>'
+      +'<p class="elim-drink">Les votants boivent 2 gorgées 🍺</p>'
+      +'</div>';
+    actHtml='<button class="btn btn-primary" onclick="afterElim()">Continuer</button>';
+  } else if(role==='under'){
+    var sips=2+round;
+    boxHtml='<div class="elim-box elim-under">'
+      +'<span class="role-pill rp-under">🔴 Undercover !</span>'
+      +'<p style="font-size:26px;font-weight:700;color:var(--text);margin:0.5rem 0">'+name+'</p>'
+      +'<p style="font-size:13px;color:var(--muted)">Son mot : "'+getWord(underWord).txt+'" — Civils : "'+getWord(civilWord).txt+'"</p>'
+      +'<p class="elim-drink">'+name+' boit '+sips+' gorgées 🥃</p>'
+      +'</div>';
+    actHtml='<button class="btn btn-primary" onclick="afterElim()">Continuer</button>';
+  } else {
+    var s2=Math.max(0,round-1);
+    boxHtml='<div class="elim-box elim-white">'
+      +'<span class="role-pill rp-white">⚪ Mr. White !</span>'
+      +'<p style="font-size:26px;font-weight:700;color:var(--text);margin:0.5rem 0">'+name+'</p>'
+      +'<p style="font-size:13px;color:var(--muted)">'+(s2>0?name+' boit '+s2+' gorgée'+(s2>1?'s':'')+'.':"Pas de gorgées (tour 1).")+'</p>'
+      +'<p class="elim-drink">Il/elle va tenter de deviner le mot...</p>'
+      +'</div>';
+    actHtml='<button class="btn btn-amber" onclick="goGuess('+idx+')">Tenter de deviner →</button>';
+  }
+
+  document.getElementById('elim-box-div').innerHTML=boxHtml;
+  document.getElementById('elim-actions').innerHTML=actHtml;
+  go('s-elim');
+}
+
+function goGuess(idx){
+  document.getElementById('guess-name').textContent=players[idx];
+  document.getElementById('guess-input').value='';
+  go('s-guess');
+}
+
+function checkGuess(){
+  var guess=document.getElementById('guess-input').value.trim().toLowerCase();
+  var target=getWord(civilWord).txt.toLowerCase();
+  var ok=guess===target||target.includes(guess)||guess.includes(target);
+  if(ok){
+    document.getElementById('gr-icon').textContent='🎉';
+    document.getElementById('gr-title').textContent='Trouvé !';
+    document.getElementById('gr-sub').textContent='Le mot était "'+getWord(civilWord).txt+'". Mr. White a gagné !';
+    document.getElementById('gr-drink').textContent='Tout le monde boit 8 gorgées ! 😱';
+  } else {
+    document.getElementById('gr-icon').textContent='❌';
+    document.getElementById('gr-title').textContent='Raté !';
+    document.getElementById('gr-sub').textContent='Le mot était "'+getWord(civilWord).txt+'".';
+    document.getElementById('gr-drink').textContent='';
+  }
+  document.getElementById('gr-next').textContent='Continuer';
+  document.getElementById('gr-next').onclick=function(){afterElim();};
+  go('s-guess-result');
+}
+
+function afterElim(){
+  round++;
+  var aliveR=[];
+  for(var i=0;i<players.length;i++){if(!eliminated[i])aliveR.push(roles[i]);}
+  var nTotal=aliveR.length;
+  var nUnder=aliveR.filter(function(r){return r==='under';}).length;
+  var nWhite=aliveR.filter(function(r){return r==='white';}).length;
+  var nCivil=aliveR.filter(function(r){return r==='civil';}).length;
+
+  if(nUnder===0&&nWhite===0){
+    showEnd('🎉','Les civils ont gagné !','Tous les intrus ont été éliminés.');
+    return;
+  }
+  if(nTotal<=2||nUnder>=nCivil){
+    showEnd('🕵️','Les undercovres ont gagné !','Ils ont réussi à se fondre dans la masse.');
+    return;
+  }
+  buildOrder();
+  go('s-game');
+}
+
+function showEnd(icon,title,sub){
+  document.getElementById('end-icon').textContent=icon;
+  document.getElementById('end-title').textContent=title;
+  document.getElementById('end-sub').textContent=sub;
+  document.getElementById('end-cw').textContent=getWord(civilWord).txt;
+  document.getElementById('end-uw').textContent=getWord(underWord).txt;
+  document.getElementById('end-cat').textContent=pairCat;
+  var html='<p class="section-label" style="margin-top:0">Rôles de chacun</p>';
+  for(var i=0;i<players.length;i++){
+    var r=roles[i];
+    var col=r==='civil'?'var(--green)':r==='under'?'var(--pink)':'var(--blue)';
+    var lbl=r==='civil'?'Civil':r==='under'?'Undercover':'Mr. White';
+    html+='<div class="end-row"><span>'+players[i]+'</span><span style="color:'+col+';font-weight:600">'+lbl+'</span></div>';
+  }
+  document.getElementById('end-roles').innerHTML=html;
+  go('s-end');
+}
+
+
+var adminCatFilter='';
+
+function buildAdmin(){
+  var cats={};
+  PAIRS.forEach(function(p){cats[p.cat]=true;});
+  var catList=Object.keys(cats).sort();
+  var fHtml='<button onclick="filterAdmin(\'\');" id="af-all" style="padding:5px 12px;font-size:12px;border-radius:20px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;font-family:inherit">Tout</button>';
+  catList.forEach(function(cat){
+    var sid=cat.replace(/[^a-z0-9]/gi,'_');
+    fHtml+='<button onclick="filterAdmin(this.dataset.cat);" data-cat="'+cat+'" id="af-'+sid+'" style="padding:5px 12px;font-size:12px;border-radius:20px;border:1px solid var(--border2);background:var(--bg3);color:var(--muted);cursor:pointer;font-family:inherit">'+cat+'</button>';
+  });
+  document.getElementById('admin-filter').innerHTML=fHtml;
+  adminCatFilter='';
+  renderAdmin();
+}
+
+function filterAdmin(cat){
+  adminCatFilter=cat;
+  document.querySelectorAll('#admin-filter button').forEach(function(b){b.style.background='var(--bg3)';b.style.color='var(--muted)';b.style.borderColor='var(--border2)';});
+  var sid=cat===''?'af-all':'af-'+cat.replace(/[^a-z0-9]/gi,'_');
+  var ab=document.getElementById(sid);
+  if(ab){ab.style.background='var(--accent)';ab.style.color='#fff';ab.style.borderColor='var(--accent)';}
+  renderAdmin();
+}
+
+function getPairIndex(c,u,cat){
+  for(var i=0;i<PAIRS.length;i++){
+    var pc=typeof PAIRS[i].c==='object'?PAIRS[i].c.txt:PAIRS[i].c;
+    var pu=typeof PAIRS[i].u==='object'?PAIRS[i].u.txt:PAIRS[i].u;
+    if(pc===c&&pu===u&&PAIRS[i].cat===cat)return i;
+  }
+  return -1;
+}
+
+function deletePair(c,u,cat){
+  if(!confirm('Supprimer "'+c+' vs '+u+'" ?'))return;
+  var idx=getPairIndex(c,u,cat);
+  if(idx>=0)PAIRS.splice(idx,1);
+  buildCatGrid();
+  buildAdmin();
+}
+
+function renderAdmin(){
+  var filtered=adminCatFilter?PAIRS.filter(function(p){return p.cat===adminCatFilter;}):PAIRS;
+  var byCat={};
+  filtered.forEach(function(p){if(!byCat[p.cat])byCat[p.cat]=[];byCat[p.cat].push(p);});
+  var html='';
+  Object.keys(byCat).sort().forEach(function(cat){
+    html+='<div style="margin-bottom:1.25rem">';
+    html+='<p style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:0.5rem">'+cat+' ('+byCat[cat].length+')</p>';
+    byCat[cat].forEach(function(p){
+      var cw=typeof p.c==='object'?p.c.txt:p.c;
+      var uw=typeof p.u==='object'?p.u.txt:p.u;
+      var cImg=typeof p.c==='object'&&p.c.img?p.c.img:null;
+      var uImg=typeof p.u==='object'&&p.u.img?p.u.img:null;
+      var safeC=cw.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      var safeU=uw.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      var safeCat=cat.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      html+='<div style="display:flex;align-items:center;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:10px 14px;margin-bottom:0.4rem;gap:10px">';
+      // Civil
+      html+='<div style="flex:1;display:flex;align-items:center;gap:8px">';
+      if(cImg)html+='<img src="'+cImg+'" style="width:36px;height:36px;border-radius:8px;object-fit:cover">';
+      html+='<span style="font-size:15px;font-weight:500;color:var(--green)">'+cw+'</span>';
+      html+='</div>';
+      html+='<span style="font-size:12px;color:var(--faint)">vs</span>';
+      // Under
+      html+='<div style="flex:1;display:flex;align-items:center;justify-content:flex-end;gap:8px">';
+      html+='<span style="font-size:15px;font-weight:500;color:var(--pink)">'+uw+'</span>';
+      if(uImg)html+='<img src="'+uImg+'" style="width:36px;height:36px;border-radius:8px;object-fit:cover">';
+      html+='</div>';
+      // Bouton supprimer
+      html+='<button onclick="deletePair(\''+safeC+'\',\''+safeU+'\',\''+safeCat+'\')" style="background:none;border:none;cursor:pointer;color:var(--faint);font-size:18px;padding:0 0 0 6px;line-height:1;flex-shrink:0" title="Supprimer">×</button>';
+      html+='</div>';
+    });
+    html+='</div>';
+  });
+  document.getElementById('admin-list').innerHTML=html||'<p style="color:var(--muted);font-size:14px">Aucune paire.</p>';
+}
+
+
+function buildCatPick(){
+  var cats={};
+  PAIRS.forEach(function(p){cats[p.cat]=true;});
+  var html='';
+  Object.keys(cats).sort().forEach(function(cat){
+    html+='<button onclick="selectCatPick(this)" data-cat="'+cat+'" style="padding:5px 12px;font-size:12px;border-radius:20px;border:1px solid var(--border2);background:var(--bg3);color:var(--muted);cursor:pointer;font-family:inherit">'+cat+'</button>';
+  });
+  document.getElementById('cat-pick').innerHTML=html;
+}
+
+function selectCatPick(btn){
+  document.querySelectorAll('#cat-pick button').forEach(function(b){b.style.background='var(--bg3)';b.style.color='var(--muted)';b.style.borderColor='var(--border2)';});
+  btn.style.background='var(--accent)';btn.style.color='#fff';btn.style.borderColor='var(--accent)';
+  document.getElementById('add-cat-new').value='';
+}
+
+function previewImg(input, previewId, dataId){
+  var file = input.files[0];
+  if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e){
+    document.getElementById(previewId).style.display='block';
+    document.getElementById(previewId.replace('preview','img')).src = e.target.result;
+    document.getElementById(dataId).value = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearImg(previewId, dataId, inputId){
+  document.getElementById(previewId).style.display='none';
+  document.getElementById(previewId.replace('preview','img')).src='';
+  document.getElementById(dataId).value='';
+  document.getElementById(inputId).value='';
+}
+
+function savePair(){
+  var civil=document.getElementById('add-civil').value.trim();
+  var under=document.getElementById('add-under').value.trim();
+  var catNew=document.getElementById('add-cat-new').value.trim();
+  var selectedBtn=document.querySelector('#cat-pick button[style*="var(--accent)"]');
+  var cat=catNew||(selectedBtn?selectedBtn.dataset.cat:'');
+  var civilImg=document.getElementById('img-civil-data').value;
+  var underImg=document.getElementById('img-under-data').value;
+  var err=document.getElementById('addpair-err');
+  if(!civil&&!civilImg){err.textContent='Le mot civil est vide.';err.style.display='block';return;}
+  if(!under&&!underImg){err.textContent="Le mot undercover est vide.";err.style.display='block';return;}
+  if(!cat){err.textContent='Choisis ou crée une catégorie.';err.style.display='block';return;}
+  err.style.display='none';
+  var cVal = civilImg ? {txt:civil||'?', img:civilImg} : civil;
+  var uVal = underImg ? {txt:under||'?', img:underImg} : under;
+  PAIRS.push({c:cVal, u:uVal, cat:cat});
+  document.getElementById('add-civil').value='';
+  document.getElementById('add-under').value='';
+  document.getElementById('add-cat-new').value='';
+  clearImg('img-civil-preview','img-civil-data','img-civil-input');
+  clearImg('img-under-preview','img-under-data','img-under-input');
+  document.querySelectorAll('#cat-pick button').forEach(function(b){b.style.background='var(--bg3)';b.style.color='var(--muted)';b.style.borderColor='var(--border2)';});
+  buildCatGrid();
+  buildAdmin();
+  go('s-admin');
+}
+
+
+function newGame(){
+  go('s-setup');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded',function(){
+  for(var i=0;i<4;i++) addPlayer();
+  nbUC=1; nbMW=0;
+  buildCatGrid();
+  document.getElementById('distrib-ready-btn').addEventListener('click',function(){goToWord();});
+});
+</script>
+</body>
+</html>
